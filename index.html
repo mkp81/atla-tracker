@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Schedule Tracker</title>
+    
+    <!-- Meta tags for fullscreen mode on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baby Tracker">
+
+    <style>
+        /* General styling */
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 300; /* Light weight for Helvetica */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: #D3D3D3;
+            background-color: #333; /* Original background color */
+            transition: background-color 0.5s; /* Smooth transition */
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px; /* Adjusted for spacing with larger font */
+        }
+
+        .time-display {
+            font-size: 8.64em; /* 20% increase from 7.2em */
+            color: #D3D3D3; /* Original watch color */
+            text-transform: lowercase;
+            transition: color 0.5s; /* Smooth transition */
+            font-weight: 300; /* Light font weight */
+        }
+
+        .container {
+            display: flex;
+            gap: 72px; /* Adjusted spacing */
+            flex-wrap: wrap;
+            justify-content: center;
+            transition: opacity 0.5s; /* Smooth transition */
+        }
+
+        .column {
+            text-align: left;
+            min-width: 432px; /* Increased for larger font */
+            margin-bottom: 28px;
+        }
+
+        .button {
+            padding: 16px 28px; /* Increased padding */
+            background-color: #000000;
+            color: #D3D3D3;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.728em; /* 20% increase from 1.44em */
+            cursor: pointer;
+            margin: 28px 0;
+            font-family: inherit;
+            text-transform: lowercase;
+            font-weight: 300; /* Light font weight */
+        }
+
+        .button:hover {
+            background-color: #444;
+        }
+
+        .result {
+            font-size: 2.16em; /* 20% increase from 1.8em */
+            margin-top: 14px; /* Adjusted for spacing */
+            text-transform: lowercase;
+            font-weight: 300; /* Light font weight */
+        }
+
+        .highlight-time {
+            font-weight: bold;
+            color: #FFFF99;
+        }
+
+        .blink {
+            color: red;
+            animation: blink-animation 1s steps(2, start) infinite;
+        }
+
+        @keyframes blink-animation {
+            to {
+                visibility: hidden;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="time-display" id="currentTime">--:--</div>
+
+        <div class="container" id="timersContainer">
+            <!-- Wake/Nap Time Column -->
+            <div class="column">
+                <button class="button" onclick="startWakeTime()">wake time start</button>
+                <button class="button" onclick="manualWakeTime()">manual</button>
+                <div class="result">wake time start: <span class="highlight-time" id="wakeTimeResult">--:--</span></div>
+                <div class="result">next nap: <span class="highlight-time" id="napTimeResult">--:--</span></div>
+            </div>
+
+            <!-- Feeding Time Column -->
+            <div class="column">
+                <button class="button" onclick="startFeedingTime()">last feeding</button>
+                <button class="button" onclick="manualFeedingTime()">manual</button>
+                <div class="result">last feeding: <span class="highlight-time" id="feedingTimeResult">--:--</span></div>
+                <div class="result">next feeding: <span class="highlight-time" id="nextFeedingTimeResult">--:--</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let wakeInterval, feedingInterval;
+
+        // Manual wake time entry using prompt
+        function manualWakeTime() {
+            const manualTimeStr = prompt("Enter the wake time (HH:MM in 24-hour format):");
+            if (manualTimeStr) {
+                const [hours, minutes] = manualTimeStr.split(":").map(Number);
+                if (!isNaN(hours) && !isNaN(minutes)) {
+                    const manualTime = new Date();
+                    manualTime.setHours(hours, minutes, 0);
+                    startWakeTime(manualTime);
+                }
+            }
+        }
+
+        // Manual feeding time entry using prompt
+        function manualFeedingTime() {
+            const manualTimeStr = prompt("Enter the feeding time (HH:MM in 24-hour format):");
+            if (manualTimeStr) {
+                const [hours, minutes] = manualTimeStr.split(":").map(Number);
+                if (!isNaN(hours) && !isNaN(minutes)) {
+                    const manualTime = new Date();
+                    manualTime.setHours(hours, minutes, 0);
+                    startFeedingTime(manualTime);
+                }
+            }
+        }
+
+        // Function to display the current time in 24-hour format
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const options = { hour: '2-digit', minute: '2-digit', hour12: false }; // Removed seconds
+            const currentTimeDisplay = document.getElementById("currentTime");
+            const timersContainer = document.getElementById("timersContainer");
+
+            // Check if current time is between 19:30 and 6:30
+            if ((hours > 19 || (hours === 19 && minutes >= 30)) || (hours < 6 || (hours === 6 && minutes <= 30))) {
+                document.body.style.backgroundColor = "#000"; // Set background to black
+                currentTimeDisplay.style.color = "#8B0000"; // Set watch to dark red
+                timersContainer.style.opacity = "0"; // Hide timers
+            } else {
+                document.body.style.backgroundColor = "#333"; // Original background color
+                currentTimeDisplay.style.color = "#D3D3D3"; // Original watch color
+                timersContainer.style.opacity = "1"; // Show timers
+            }
+
+            currentTimeDisplay.textContent = now.toLocaleTimeString([], options);
+        }
+
+        setInterval(updateCurrentTime, 1000);
+
+        // Clear interval and set blinking for target time
+        function setBlinking(targetId, targetTime, intervalVar) {
+            clearInterval(intervalVar);
+            intervalVar = setInterval(() => {
+                const now = new Date();
+                const diffMinutes = (targetTime - now) / (1000 * 60);
+
+                if (diffMinutes <= 10 && diffMinutes >= 0) {
+                    document.getElementById(targetId).classList.add("blink");
+                    document.getElementById(targetId).textContent += " 🚨";
+                } else {
+                    document.getElementById(targetId).classList.remove("blink");
+                    document.getElementById(targetId).textContent = targetTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                }
+            }, 1000);
+            return intervalVar;
+        }
+
+        // Function to calculate and display wake time and next nap
+        function startWakeTime(manualTime = new Date()) {
+            document.getElementById("wakeTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+            const napTime = new Date(manualTime.getTime() + 90 * 60000);
+            document.getElementById("napTimeResult").textContent = napTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+            wakeInterval = setBlinking("napTimeResult", napTime, wakeInterval);
+        }
+
+        // Function to calculate and display feeding time and next feeding
+        function startFeedingTime(manualTime = new Date()) {
+            document.getElementById("feedingTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+            const nextFeedingTime = new Date(manualTime.getTime() + 180 * 60000);
+            document.getElementById("nextFeedingTimeResult").textContent = nextFeedingTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+            feedingInterval = setBlinking("nextFeedingTimeResult", nextFeedingTime, feedingInterval);
+        }
+    </script>
+</body>
+</html>
