@@ -33,6 +33,13 @@
             gap: 28px; /* Adjusted for spacing with larger font */
         }
 
+        /* Vitamin D emoji */
+        .vitamin-reminder {
+            font-size: 4em; /* Large emoji size */
+            cursor: pointer;
+            display: block; /* Initially displayed */
+        }
+
         .time-display {
             font-size: 8.64em; /* 20% increase from 7.2em */
             color: #D3D3D3; /* Original watch color */
@@ -99,6 +106,9 @@
 </head>
 <body>
     <div class="main-container">
+        <!-- Vitamin D Reminder Emoji -->
+        <div class="vitamin-reminder" id="vitaminReminder" onclick="dismissVitaminReminder()">💊</div>
+
         <div class="time-display" id="currentTime">--:--</div>
 
         <div class="container" id="timersContainer">
@@ -122,95 +132,7 @@
 
     <script>
         let wakeInterval, feedingInterval;
+        let vitaminReminderDismissed = false;
 
-        // Manual wake time entry using prompt
-        function manualWakeTime() {
-            const manualTimeStr = prompt("Enter the wake time (HH:MM in 24-hour format):");
-            if (manualTimeStr) {
-                const [hours, minutes] = manualTimeStr.split(":").map(Number);
-                if (!isNaN(hours) && !isNaN(minutes)) {
-                    const manualTime = new Date();
-                    manualTime.setHours(hours, minutes, 0);
-                    startWakeTime(manualTime);
-                }
-            }
-        }
-
-        // Manual feeding time entry using prompt
-        function manualFeedingTime() {
-            const manualTimeStr = prompt("Enter the feeding time (HH:MM in 24-hour format):");
-            if (manualTimeStr) {
-                const [hours, minutes] = manualTimeStr.split(":").map(Number);
-                if (!isNaN(hours) && !isNaN(minutes)) {
-                    const manualTime = new Date();
-                    manualTime.setHours(hours, minutes, 0);
-                    startFeedingTime(manualTime);
-                }
-            }
-        }
-
-        // Function to display the current time in 24-hour format
-        function updateCurrentTime() {
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const options = { hour: '2-digit', minute: '2-digit', hour12: false }; // Removed seconds
-            const currentTimeDisplay = document.getElementById("currentTime");
-            const timersContainer = document.getElementById("timersContainer");
-
-            // Check if current time is between 19:30 and 6:30
-            if ((hours > 19 || (hours === 19 && minutes >= 30)) || (hours < 6 || (hours === 6 && minutes <= 30))) {
-                document.body.style.backgroundColor = "#000"; // Set background to black
-                currentTimeDisplay.style.color = "#8B0000"; // Set watch to dark red
-                timersContainer.style.opacity = "0"; // Hide timers
-            } else {
-                document.body.style.backgroundColor = "#333"; // Original background color
-                currentTimeDisplay.style.color = "#D3D3D3"; // Original watch color
-                timersContainer.style.opacity = "1"; // Show timers
-            }
-
-            currentTimeDisplay.textContent = now.toLocaleTimeString([], options);
-        }
-
-        setInterval(updateCurrentTime, 1000);
-
-        // Clear interval and set blinking for target time
-        function setBlinking(targetId, targetTime, intervalVar) {
-            clearInterval(intervalVar);
-            intervalVar = setInterval(() => {
-                const now = new Date();
-                const diffMinutes = (targetTime - now) / (1000 * 60);
-
-                if (diffMinutes <= 10 && diffMinutes >= 0) {
-                    document.getElementById(targetId).classList.add("blink");
-                    document.getElementById(targetId).textContent += " 🚨";
-                } else {
-                    document.getElementById(targetId).classList.remove("blink");
-                    document.getElementById(targetId).textContent = targetTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-                }
-            }, 1000);
-            return intervalVar;
-        }
-
-        // Function to calculate and display wake time and next nap
-        function startWakeTime(manualTime = new Date()) {
-            document.getElementById("wakeTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-
-            const napTime = new Date(manualTime.getTime() + 90 * 60000);
-            document.getElementById("napTimeResult").textContent = napTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-
-            wakeInterval = setBlinking("napTimeResult", napTime, wakeInterval);
-        }
-
-        // Function to calculate and display feeding time and next feeding
-        function startFeedingTime(manualTime = new Date()) {
-            document.getElementById("feedingTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-
-            const nextFeedingTime = new Date(manualTime.getTime() + 180 * 60000);
-            document.getElementById("nextFeedingTimeResult").textContent = nextFeedingTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-
-            feedingInterval = setBlinking("nextFeedingTimeResult", nextFeedingTime, feedingInterval);
-        }
-    </script>
-</body>
-</html>
+        // Show or hide the Vitamin D reminder based on the time and reset at 6:30 AM
+        function updateVitaminReminder()
