@@ -186,6 +186,32 @@
 
         setInterval(updateCurrentTime, 1000);
 
+        // Manual wake time entry using prompt
+        function manualWakeTime() {
+            const manualTimeStr = prompt("Enter the wake time (HH:MM in 24-hour format):");
+            if (manualTimeStr) {
+                const [hours, minutes] = manualTimeStr.split(":").map(Number);
+                if (!isNaN(hours) && !isNaN(minutes)) {
+                    const manualTime = new Date();
+                    manualTime.setHours(hours, minutes, 0);
+                    startWakeTime(manualTime);
+                }
+            }
+        }
+
+        // Manual feeding time entry using prompt
+        function manualFeedingTime() {
+            const manualTimeStr = prompt("Enter the feeding time (HH:MM in 24-hour format):");
+            if (manualTimeStr) {
+                const [hours, minutes] = manualTimeStr.split(":").map(Number);
+                if (!isNaN(hours) && !isNaN(minutes)) {
+                    const manualTime = new Date();
+                    manualTime.setHours(hours, minutes, 0);
+                    startFeedingTime(manualTime);
+                }
+            }
+        }
+
         // Clear interval and set blinking for target time 5 minutes before it arrives
         function setBlinking(targetId, targetTime, intervalVar) {
             clearInterval(intervalVar);
