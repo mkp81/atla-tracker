@@ -33,8 +33,13 @@
             gap: 28px; /* Adjusted for spacing with larger font */
         }
 
-        /* Vitamin D emoji */
-        .vitamin-reminder {
+        /* Reminder emojis */
+        .reminder-container {
+            display: flex;
+            gap: 20px; /* Space between the reminders */
+        }
+
+        .vitamin-reminder, .dog-reminder {
             font-size: 4em; /* Large emoji size */
             cursor: pointer;
             display: block; /* Initially displayed */
@@ -106,8 +111,11 @@
 </head>
 <body>
     <div class="main-container">
-        <!-- Vitamin D Reminder Emoji -->
-        <div class="vitamin-reminder" id="vitaminReminder" onclick="dismissVitaminReminder()">💊</div>
+        <!-- Reminder Emojis -->
+        <div class="reminder-container">
+            <div class="vitamin-reminder" id="vitaminReminder" onclick="dismissVitaminReminder()">💊</div>
+            <div class="dog-reminder" id="dogReminder" onclick="dismissDogReminder()">🐶</div>
+        </div>
 
         <div class="time-display" id="currentTime">--:--</div>
 
@@ -133,31 +141,47 @@
     <script>
         let wakeInterval, feedingInterval;
         let vitaminReminderDismissed = false;
+        let dogReminderDismissed = false;
 
-        // Show or hide the Vitamin D reminder based on the time and reset at 6:30 AM
-        function updateVitaminReminder() {
+        // Show or hide reminders based on time and reset at specific times
+        function updateReminders() {
             const now = new Date();
             const hours = now.getHours();
             const minutes = now.getMinutes();
-            const vitaminReminder = document.getElementById("vitaminReminder");
 
-            // Reset the reminder at 6:30 AM
-            if (hours === 6 && minutes === 30 && now.getSeconds() < 1) {
+            // Reset vitamin reminder at 4:30 AM
+            if (hours === 4 && minutes === 30 && now.getSeconds() < 1) {
                 vitaminReminderDismissed = false;
+                dogReminderDismissed = false;
             }
 
-            // Show reminder if not dismissed
+            // Handle vitamin reminder visibility
+            const vitaminReminder = document.getElementById("vitaminReminder");
             if (!vitaminReminderDismissed) {
                 vitaminReminder.style.display = "block";
             } else {
                 vitaminReminder.style.display = "none";
             }
+
+            // Handle dog reminder visibility
+            const dogReminder = document.getElementById("dogReminder");
+            if (!dogReminderDismissed) {
+                dogReminder.style.display = "block";
+            } else {
+                dogReminder.style.display = "none";
+            }
         }
 
-        // Dismiss the Vitamin D reminder
+        // Dismiss vitamin reminder
         function dismissVitaminReminder() {
             vitaminReminderDismissed = true;
             document.getElementById("vitaminReminder").style.display = "none";
+        }
+
+        // Dismiss dog reminder
+        function dismissDogReminder() {
+            dogReminderDismissed = true;
+            document.getElementById("dogReminder").style.display = "none";
         }
 
         // Function to display the current time in 24-hour format
@@ -169,8 +193,8 @@
             const currentTimeDisplay = document.getElementById("currentTime");
             const timersContainer = document.getElementById("timersContainer");
 
-            // Check if current time is between 19:30 and 6:30
-            if ((hours > 19 || (hours === 19 && minutes >= 30)) || (hours < 6 || (hours === 6 && minutes <= 30))) {
+            // Check if current time is between 19:30 and 4:30
+            if ((hours > 19 || (hours === 19 && minutes >= 30)) || (hours < 4 || (hours === 4 && minutes <= 30))) {
                 document.body.style.backgroundColor = "#000"; // Set background to black
                 currentTimeDisplay.style.color = "#8B0000"; // Set watch to dark red
                 timersContainer.style.opacity = "0"; // Hide timers
@@ -181,11 +205,12 @@
             }
 
             currentTimeDisplay.textContent = now.toLocaleTimeString([], options);
-            updateVitaminReminder();
+            updateReminders();
         }
 
         setInterval(updateCurrentTime, 1000);
 
+        // Other functions (manual input, blinking, timers) remain unchanged
         // Manual wake time entry using prompt
         function manualWakeTime() {
             const manualTimeStr = prompt("Enter the wake time (HH:MM in 24-hour format):");
@@ -199,7 +224,6 @@
             }
         }
 
-        // Manual feeding time entry using prompt
         function manualFeedingTime() {
             const manualTimeStr = prompt("Enter the feeding time (HH:MM in 24-hour format):");
             if (manualTimeStr) {
@@ -212,7 +236,6 @@
             }
         }
 
-        // Clear interval and set blinking for target time 5 minutes before it arrives
         function setBlinking(targetId, targetTime, intervalVar) {
             clearInterval(intervalVar);
             intervalVar = setInterval(() => {
@@ -229,7 +252,6 @@
             return intervalVar;
         }
 
-        // Function to calculate and display wake time and next nap
         function startWakeTime(manualTime = new Date()) {
             document.getElementById("wakeTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
@@ -239,7 +261,6 @@
             wakeInterval = setBlinking("napTimeResult", napTime, wakeInterval);
         }
 
-        // Function to calculate and display feeding time and next feeding
         function startFeedingTime(manualTime = new Date()) {
             document.getElementById("feedingTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
