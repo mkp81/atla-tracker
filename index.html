@@ -39,8 +39,8 @@
             gap: 20px; /* Space between the reminders */
         }
 
-        .vitamin-reminder, .dog-reminder {
-            font-size: 4em; /* Large emoji size */
+        .reminder {
+            font-size: 5em; /* Increased emoji size */
             cursor: pointer;
             display: block; /* Initially displayed */
         }
@@ -113,8 +113,10 @@
     <div class="main-container">
         <!-- Reminder Emojis -->
         <div class="reminder-container">
-            <div class="vitamin-reminder" id="vitaminReminder" onclick="dismissVitaminReminder()">💊</div>
-            <div class="dog-reminder" id="dogReminder" onclick="dismissDogReminder()">🐶</div>
+            <div class="reminder" id="vitaminReminder" onclick="dismissVitaminReminder()">💊</div>
+            <div class="reminder" id="dogReminder" onclick="dismissDogReminder()">🐶</div>
+            <div class="reminder" id="walkReminder" onclick="dismissWalkReminder()">🦮</div>
+            <div class="reminder" id="dinnerReminder" onclick="dismissDinnerReminder()">🐶</div>
         </div>
 
         <div class="time-display" id="currentTime">--:--</div>
@@ -142,46 +144,55 @@
         let wakeInterval, feedingInterval;
         let vitaminReminderDismissed = false;
         let dogReminderDismissed = false;
+        let walkReminderDismissed = false;
+        let dinnerReminderDismissed = false;
 
-        // Show or hide reminders based on time and reset at specific times
+        // Show or hide reminders based on time and reset at 4:30 AM
         function updateReminders() {
             const now = new Date();
             const hours = now.getHours();
             const minutes = now.getMinutes();
 
-            // Reset vitamin reminder at 4:30 AM
+            // Reset reminders at 4:30 AM
             if (hours === 4 && minutes === 30 && now.getSeconds() < 1) {
                 vitaminReminderDismissed = false;
                 dogReminderDismissed = false;
+                walkReminderDismissed = false;
+                dinnerReminderDismissed = false;
             }
 
             // Handle vitamin reminder visibility
-            const vitaminReminder = document.getElementById("vitaminReminder");
-            if (!vitaminReminderDismissed) {
-                vitaminReminder.style.display = "block";
-            } else {
-                vitaminReminder.style.display = "none";
-            }
+            document.getElementById("vitaminReminder").style.display = vitaminReminderDismissed ? "none" : "block";
 
             // Handle dog reminder visibility
-            const dogReminder = document.getElementById("dogReminder");
-            if (!dogReminderDismissed) {
-                dogReminder.style.display = "block";
-            } else {
-                dogReminder.style.display = "none";
-            }
+            document.getElementById("dogReminder").style.display = dogReminderDismissed ? "none" : "block";
+
+            // Handle walk reminder visibility
+            document.getElementById("walkReminder").style.display = walkReminderDismissed ? "none" : "block";
+
+            // Handle dinner reminder visibility
+            document.getElementById("dinnerReminder").style.display = dinnerReminderDismissed ? "none" : "block";
         }
 
-        // Dismiss vitamin reminder
+        // Dismiss reminders
         function dismissVitaminReminder() {
             vitaminReminderDismissed = true;
             document.getElementById("vitaminReminder").style.display = "none";
         }
 
-        // Dismiss dog reminder
         function dismissDogReminder() {
             dogReminderDismissed = true;
             document.getElementById("dogReminder").style.display = "none";
+        }
+
+        function dismissWalkReminder() {
+            walkReminderDismissed = true;
+            document.getElementById("walkReminder").style.display = "none";
+        }
+
+        function dismissDinnerReminder() {
+            dinnerReminderDismissed = true;
+            document.getElementById("dinnerReminder").style.display = "none";
         }
 
         // Function to display the current time in 24-hour format
@@ -210,7 +221,6 @@
 
         setInterval(updateCurrentTime, 1000);
 
-        // Other functions (manual input, blinking, timers) remain unchanged
         // Manual wake time entry using prompt
         function manualWakeTime() {
             const manualTimeStr = prompt("Enter the wake time (HH:MM in 24-hour format):");
@@ -224,6 +234,7 @@
             }
         }
 
+        // Manual feeding time entry using prompt
         function manualFeedingTime() {
             const manualTimeStr = prompt("Enter the feeding time (HH:MM in 24-hour format):");
             if (manualTimeStr) {
@@ -236,38 +247,19 @@
             }
         }
 
-        function setBlinking(targetId, targetTime, intervalVar) {
-            clearInterval(intervalVar);
-            intervalVar = setInterval(() => {
-                const now = new Date();
-                const diffMinutes = (targetTime - now) / (1000 * 60);
-
-                if (diffMinutes <= 5 && diffMinutes >= 0) {
-                    document.getElementById(targetId).classList.add("blink");
-                } else {
-                    document.getElementById(targetId).classList.remove("blink");
-                }
-                document.getElementById(targetId).textContent = targetTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-            }, 1000);
-            return intervalVar;
-        }
-
+        // Function to set timers
         function startWakeTime(manualTime = new Date()) {
             document.getElementById("wakeTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
-            const napTime = new Date(manualTime.getTime() + 90 * 60000);
+            const napTime = new Date(manualTime.getTime() + 60 * 60000); // 1-hour nap time
             document.getElementById("napTimeResult").textContent = napTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-
-            wakeInterval = setBlinking("napTimeResult", napTime, wakeInterval);
         }
 
         function startFeedingTime(manualTime = new Date()) {
             document.getElementById("feedingTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
-            const nextFeedingTime = new Date(manualTime.getTime() + 180 * 60000);
+            const nextFeedingTime = new Date(manualTime.getTime() + 240 * 60000); // 4-hour feeding interval
             document.getElementById("nextFeedingTimeResult").textContent = nextFeedingTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-
-            feedingInterval = setBlinking("nextFeedingTimeResult", nextFeedingTime, feedingInterval);
         }
     </script>
 </body>
