@@ -115,7 +115,7 @@
         <div class="reminder-container">
             <div class="reminder" id="vitaminReminder" onclick="dismissVitaminReminder()">💊</div>
             <div class="reminder" id="dogReminder" onclick="dismissDogReminder()">🐶</div>
-            <div class="reminder" id="walkReminder" onclick="dismissWalkReminder()">🦮</div>
+            <div class="reminder" id="walkReminder" onclick="dismissWalkReminder()">💩</div>
             <div class="reminder" id="dinnerReminder" onclick="dismissDinnerReminder()">🐶</div>
         </div>
 
@@ -221,7 +221,7 @@
 
         setInterval(updateCurrentTime, 1000);
 
-        // Manual wake time entry using prompt
+        // Other functions remain unchanged for timers and manual input
         function manualWakeTime() {
             const manualTimeStr = prompt("Enter the wake time (HH:MM in 24-hour format):");
             if (manualTimeStr) {
@@ -234,7 +234,6 @@
             }
         }
 
-        // Manual feeding time entry using prompt
         function manualFeedingTime() {
             const manualTimeStr = prompt("Enter the feeding time (HH:MM in 24-hour format):");
             if (manualTimeStr) {
@@ -247,7 +246,6 @@
             }
         }
 
-        // Function to set timers
         function startWakeTime(manualTime = new Date()) {
             document.getElementById("wakeTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
