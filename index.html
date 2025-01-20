@@ -5,16 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baby Schedule Tracker</title>
 
-    <!-- Meta tags for fullscreen mode on iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Baby Tracker">
-
     <style>
         /* General styling */
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-weight: 300; /* Light weight for Helvetica */
+            font-weight: 300;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -22,63 +17,58 @@
             height: 100vh;
             margin: 0;
             color: #D3D3D3;
-            background-color: #333; /* Original background color */
-            transition: background-color 0.5s; /* Smooth transition */
+            background-color: #333;
+            transition: background-color 0.5s;
         }
 
         .main-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 28px; /* Adjusted for spacing with larger font */
+            gap: 20px;
         }
 
-        /* Reminder emojis */
         .reminder-container {
             display: flex;
-            gap: 20px; /* Space between the reminders */
+            gap: 20px;
         }
 
         .reminder {
-            font-size: 5em; /* Increased emoji size */
+            font-size: 5em;
             cursor: pointer;
-            display: block; /* Initially displayed */
+            display: block;
         }
 
         .time-display {
-            font-size: 8.64em; /* Increased font size */
-            color: #D3D3D3; /* Original watch color */
+            font-size: 8em;
+            color: #D3D3D3;
             text-transform: lowercase;
-            transition: color 0.5s; /* Smooth transition */
-            font-weight: 300; /* Light font weight */
+            transition: color 0.5s;
         }
 
         .container {
             display: flex;
-            gap: 72px; /* Adjusted spacing */
+            gap: 20px;
             flex-wrap: wrap;
             justify-content: center;
-            transition: opacity 0.5s; /* Smooth transition */
         }
 
         .column {
             text-align: left;
-            min-width: 432px; /* Increased for larger font */
-            margin-bottom: 28px;
+            min-width: 300px;
+            margin-bottom: 20px;
         }
 
         .button {
-            padding: 16px 28px; /* Increased padding */
-            background-color: #000000;
+            padding: 10px 20px;
+            background-color: #000;
             color: #D3D3D3;
             border: none;
             border-radius: 5px;
-            font-size: 1.728em; /* Increased font size */
+            font-size: 1.5em;
             cursor: pointer;
-            margin: 28px 0;
             font-family: inherit;
             text-transform: lowercase;
-            font-weight: 300; /* Light font weight */
         }
 
         .button:hover {
@@ -86,10 +76,9 @@
         }
 
         .result {
-            font-size: 2.16em; /* Increased font size */
-            margin-top: 14px; /* Adjusted for spacing */
+            font-size: 1.8em;
+            margin-top: 10px;
             text-transform: lowercase;
-            font-weight: 300; /* Light font weight */
         }
 
         .highlight-time {
@@ -97,20 +86,9 @@
             color: #FFFF99;
         }
 
-        .blink {
-            color: red;
-            animation: blink-animation 1s steps(2, start) infinite;
-        }
-
-        @keyframes blink-animation {
-            to {
-                visibility: hidden;
-            }
-        }
-
         .temperature {
             position: absolute;
-            top: 20px;
+            top: 10px;
             right: 20px;
             font-size: 2em;
             font-weight: bold;
@@ -122,10 +100,10 @@
     <div class="main-container">
         <!-- Reminder Emojis -->
         <div class="reminder-container">
-            <div class="reminder" id="vitaminReminder" onclick="dismissVitaminReminder()">💊</div>
-            <div class="reminder" id="dogReminder" onclick="dismissDogReminder()">🐶</div>
-            <div class="reminder" id="walkReminder" onclick="dismissWalkReminder()">💩</div>
-            <div class="reminder" id="dinnerReminder" onclick="dismissDinnerReminder()">🐶</div>
+            <div class="reminder" id="vitaminReminder" onclick="dismissReminder('vitaminReminder')">💊</div>
+            <div class="reminder" id="dogReminder" onclick="dismissReminder('dogReminder')">🐶</div>
+            <div class="reminder" id="walkReminder" onclick="dismissReminder('walkReminder')">💩</div>
+            <div class="reminder" id="dinnerReminder" onclick="dismissReminder('dinnerReminder')">🐶</div>
         </div>
 
         <div class="time-display" id="currentTime">--:--</div>
@@ -154,16 +132,91 @@
 
     <script>
         let wakeInterval, feedingInterval;
-        let vitaminReminderDismissed = false;
-        let dogReminderDismissed = false;
-        let walkReminderDismissed = false;
-        let dinnerReminderDismissed = false;
+        const reminders = {
+            vitaminReminder: false,
+            dogReminder: false,
+            walkReminder: false,
+            dinnerReminder: false,
+        };
 
-        // Function to fetch the temperature in Berlin and update the display
+        // Update the current time
+        function updateCurrentTime() {
+            const now = new Date();
+            const currentTimeDisplay = document.getElementById("currentTime");
+            const options = { hour: '2-digit', minute: '2-digit', hour12: false };
+            currentTimeDisplay.textContent = now.toLocaleTimeString([], options);
+        }
+        setInterval(updateCurrentTime, 1000);
+        updateCurrentTime();
+
+        // Reminder Dismissal
+        function dismissReminder(reminderId) {
+            reminders[reminderId] = true;
+            document.getElementById(reminderId).style.display = "none";
+        }
+
+        // Manual wake time
+        function manualWakeTime() {
+            const manualTimeStr = prompt("Enter the wake time (HH:MM in 24-hour format):");
+            if (manualTimeStr) {
+                const [hours, minutes] = manualTimeStr.split(":").map(Number);
+                if (!isNaN(hours) && !isNaN(minutes)) {
+                    const manualTime = new Date();
+                    manualTime.setHours(hours, minutes, 0);
+                    startWakeTime(manualTime);
+                }
+            }
+        }
+
+        // Manual feeding time
+        function manualFeedingTime() {
+            const manualTimeStr = prompt("Enter the feeding time (HH:MM in 24-hour format):");
+            if (manualTimeStr) {
+                const [hours, minutes] = manualTimeStr.split(":").map(Number);
+                if (!isNaN(hours) && !isNaN(minutes)) {
+                    const manualTime = new Date();
+                    manualTime.setHours(hours, minutes, 0);
+                    startFeedingTime(manualTime);
+                }
+            }
+        }
+
+        // Start wake time
+        function startWakeTime(manualTime = new Date()) {
+            document.getElementById("wakeTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+            const napTime = new Date(manualTime.getTime() + 90 * 60000); // 90-minute wake time
+            document.getElementById("napTimeResult").textContent = napTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+
+        // Start feeding time
+        function startFeedingTime(manualTime = new Date()) {
+            feedingInterval = manualTime;
+            document.getElementById("feedingTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+            const nextFeedingTime = new Date(manualTime.getTime() + 240 * 60000); // 4-hour feeding interval
+            document.getElementById("nextFeedingTimeResult").textContent = nextFeedingTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+
+        // Update time since last feeding
+        function updateTimeSinceAte() {
+            if (!feedingInterval) return;
+            const now = new Date();
+            const diffMs = now - feedingInterval;
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            document.getElementById("sinceAteResult").textContent = `${hours}h ${minutes}m`;
+        }
+        setInterval(updateTimeSinceAte, 1000);
+
+        // Fetch temperature
         async function updateTemperature() {
             const temperatureDisplay = document.getElementById("temperature");
             try {
                 const response = await fetch("https://api.openweathermap.org/data/2.5/weather?q=Berlin&units=metric&appid=8f6a08d9867eb12f12c30342157ff840");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
                 const data = await response.json();
                 const temp = Math.round(data.main.temp);
                 temperatureDisplay.textContent = `${temp}°C`;
@@ -180,39 +233,8 @@
                 temperatureDisplay.textContent = "--°C";
             }
         }
-
-        setInterval(updateTemperature, 600000); // Update temperature every 10 minutes
-        updateTemperature(); // Initial update
-
-        // Function to calculate time since last feeding
-        function updateTimeSinceAte(lastFeedingTime) {
-            const now = new Date();
-            const diffMs = now - lastFeedingTime;
-            const hours = Math.floor(diffMs / (1000 * 60 * 60));
-            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-            document.getElementById("sinceAteResult").textContent = `${hours}h ${minutes}m`;
-        }
-
-        setInterval(() => {
-            const lastFeedingTime = feedingInterval ? new Date(feedingInterval) : null;
-            if (lastFeedingTime) updateTimeSinceAte(lastFeedingTime);
-        }, 1000);
-
-        // Other existing functionality remains unchanged (e.g., reminders, timers, etc.)
-        function startWakeTime(manualTime = new Date()) {
-            document.getElementById("wakeTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-
-            const napTime = new Date(manualTime.getTime() + 90 * 60000); // 1.5-hour nap time
-            document.getElementById("napTimeResult").textContent = napTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-        }
-
-        function startFeedingTime(manualTime = new Date()) {
-            feedingInterval = manualTime;
-            document.getElementById("feedingTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-
-            const nextFeedingTime = new Date(manualTime.getTime() + 240 * 60000); // 4-hour feeding interval
-            document.getElementById("nextFeedingTimeResult").textContent = nextFeedingTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-        }
+        setInterval(updateTemperature, 600000); // Update every 10 minutes
+        updateTemperature();
     </script>
 </body>
 </html>
