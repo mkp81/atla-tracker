@@ -197,7 +197,7 @@
             document.getElementById("dinnerReminder").style.display = "none";
         }
 
-        // Function to display the current time in 24-hour format
+        // Function to display the current time in 24-hour format and handle night mode
         function updateCurrentTime() {
             const now = new Date();
             const options = { hour: '2-digit', minute: '2-digit', hour12: false };
@@ -205,6 +205,17 @@
 
             currentTimeDisplay.textContent = now.toLocaleTimeString([], options);
             updateReminders();
+
+            // Night mode: active from 20:00 to 5:30
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            if ((hours >= 20) || (hours < 5) || (hours === 5 && minutes < 30)) {
+                document.body.style.backgroundColor = "#222"; // Very dark grey
+                currentTimeDisplay.style.color = "#8B0000"; // Very dark red
+            } else {
+                document.body.style.backgroundColor = "#333";
+                currentTimeDisplay.style.color = "#D3D3D3";
+            }
         }
 
         setInterval(updateCurrentTime, 1000);
@@ -239,7 +250,8 @@
         function startWakeTime(manualTime = new Date()) {
             document.getElementById("wakeTimeResult").textContent = manualTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
-            const napTime = new Date(manualTime.getTime() + 90 * 60000); // 90-minute nap time
+            // Updated nap time: 2.5 hours (150 minutes)
+            const napTime = new Date(manualTime.getTime() + 150 * 60000);
             document.getElementById("napTimeResult").textContent = napTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
         }
 
